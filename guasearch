@@ -6,25 +6,24 @@ _help()
 cat <<-END
 #########################################################################
 # Author: alf149                                                        #
-# Scriptname: mycrt version 1.1.001                                     #
-# You'll find last version at https://github.com/alf149/myfiles         #
+# Scriptname: guaserch version 1..001                                   #
+# You'll find last version at https://github.com/alf149/guaserch        #
 #                                                                       #
 # Uses jq as json handler                                               #
-# uses curl to get json form crt.sh                                     #
 #                                                                       #
 #########################################################################
 
 Syntax: scriptTemplate [-g|h|v|V]
 options:
 -h     Print this Help.
--d     Domain - Get active domain certificates info from crt.sh
+-d     Domain - Get active domain certificates info from guasearch.sh
        -d <DOMAIN> 
--l     List - like -d but for at list of domains in crt/domain_list     
+-l     List - like -d but for at list of domains in search/domain_list     
 END
 }
 
 ### Set variables
-scriptname='mycrt'
+scriptname='guasearch'
 runtime=$(date +"%Y_%m_%d_%H_%M_%S")
 
 ### Functions
@@ -36,20 +35,20 @@ _cleantemp() {
 }
 
 _init() {
-    mkdir -p crt
-    rm crt/crt*.csv 2> /dev/null
-    #touch crt/domain_list
+    mkdir -p search
+    rm search/search*.csv 2> /dev/null
+    #touch search/domain_list
 }
 
 _combine() {
     # combine all csv files, 
-    awk 'FNR==1 && NR!=1{next;}{print}' crt/crt_*.csv >> crt/domain_merged.out
-    cp crt/domain_merged.out crt/domain_merged__${runtime}.csv
-    rm crt/domain_merged.out
-    echo "wiew result in crt/domain_merged__${runtime}.csv"
+    awk 'FNR==1 && NR!=1{next;}{print}' search/search_*.csv >> search/domain_merged.out
+    cp search/domain_merged.out search/domain_merged__${runtime}.csv
+    rm search/domain_merged.out
+    echo "wiew result in search/domain_merged__${runtime}.csv"
 }
 
-_domaincrtdata(){
+_domainsearchdata(){
    domain=$1
 
    # Define temp dir and tempifile
@@ -62,19 +61,21 @@ _domaincrtdata(){
    echo "${runtime} - Checking certs for ${domain}"
    echo 
    echo "--------"
-   echo "Results for $domain, more info in crt/crt_${domain}_${runtime}.csv "
-   curl -s https://crt.sh/\?q\=\%.${domain}\&exclude\=expired\&deduplicate\=Y\&output\=json >> "$tempfile" 2>/dev/null
+   echo "Results for $domain, more info in search/search_${domain}_${runtime}.csv "
+   curl -Ls http://${domain} | grep -ioE "UA-[0-9]{1,8}-[0-9]{1,1}" >> "$tempfile" 2>/dev/null
    
    # save to file
-   cat $tempfile | jq -r '.[] += { "domain": "'$domain'" }' | jq -r 'map({domain,common_name, name_value, entry_timestamp, not_before, not_after, serial_number, issuer_ca_id, issuer_name, id}) | (first | keys_unsorted) as $keys | map([to_entries[] | .value]) as $rows | $keys,$rows[] | @csv ' > crt/crt_${domain}_${runtime}.csv
-   ##cat $tempfile | jq -r 'map({domain,common_name, name_value, entry_timestamp, not_before, not_after, serial_number, issuer_ca_id, issuer_name, id}) | (first | keys_unsorted) as $keys | map([to_entries[] | .value]) as $rows | $keys,$rows[] | @csv ' > crt/crt_${domain}_${runtime}.csv
+   #cat $tempfile | jq -r '.[] += { "domain": "'$domain'" }' | jq -r 'map({domain,common_name, name_value, entry_timestamp, not_before, not_after, serial_number, issuer_ca_id, issuer_name, id}) | (first | keys_unsorted) as $keys | map([to_entries[] | .value]) as $rows | $keys,$rows[] | @csv ' > search/search_${domain}_${runtime}.csv
+   ##cat $tempfile | jq -r 'map({domain,common_name, name_value, entry_timestamp, not_before, not_after, serial_number, issuer_ca_id, issuer_name, id}) | (first | keys_unsorted) as $keys | map([to_entries[] | .value]) as $rows | $keys,$rows[] | @csv ' > search/search_${domain}_${runtime}.csv
    
-   if [[ -s crt/crt_${domain}_${runtime}.csv ]] ; then
+cat $tempfile
+
+   if [[ -s search/search_${domain}_${runtime}.csv ]] ; then
    echo "ok"
    else
-   cat > crt/crt_${domain}_${runtime}.csv <<EOF
-"domain","common_name","name_value","entry_timestamp","not_before","not_after","serial_number","issuer_ca_id","issuer_name","id"
-"${domain}", "No active Certificate", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
+   cat > search/search_${domain}_${runtime}.csv <<EOF
+"domain","UA"
+"${domain}", "No GA UA code"
 EOF
    fi ;
    _cleantemp         
@@ -89,17 +90,17 @@ while getopts "hcl :d:" option; do
 
       d) # Domain
         _init
-        _domaincrtdata ${OPTARG}
+        _domainsearchdata ${OPTARG}
         exit;;
 
       l) # List of domains
         _init
-        FILE=crt/domain_list
+        FILE=search/domain_list
         if test -f "$FILE"; then
         cat "$FILE" | while read LREAD
         do
             if [[ ( ${LREAD} != "" ) ]]; then 
-                _domaincrtdata ${LREAD}
+                _domainsearchdata ${LREAD}
             fi
         done
         fi 
