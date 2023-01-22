@@ -62,9 +62,9 @@ _domainsearchdata(){
    echo 
    echo "--------"
    echo "Results for $domain, more info in search/search_${domain}_${runtime}.csv "
-   search_final_url=$(curl $domain -s -L -I -o /dev/null -w '%{url_effective}')
-   search_gua_res=$(curl -Ls http://${domain} | grep -ioE "UA-[0-9]{1,8}-[0-9]{1,2}") 
-   search_xua_res=$(curl -Ls http://${domain} | grep -ioE "X-UA-Compatible") 
+   search_final_url=$(curl -Ls http://${domain} -o /dev/null -w '%{url_effective}')
+   search_gua_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "UA-[0-9]{1,8}-[0-9]{1,2}") 
+   search_xua_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "X-UA-Compatible") 
    search_gtag_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "GTM-[0-9,A-Z]{1,6}") 
 
    # save to csv file
