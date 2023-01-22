@@ -6,7 +6,7 @@ _help()
 cat <<-END
 #########################################################################
 # Author: alf149                                                        #
-# Scriptname: guaserch version 1..001                                   #
+# Scriptname: guaserch version 1.0.0                                    #
 # You'll find last version at https://github.com/alf149/guaserch        #
 #                                                                       #
 # Uses jq as json handler                                               #
