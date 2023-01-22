@@ -6,10 +6,9 @@ _help()
 cat <<-END
 #########################################################################
 # Author: alf149                                                        #
-# Scriptname: guaserch version 1.0.0                                    #
+# Scriptname: guaserch version 1.0.1                                    #
 # You'll find last version at https://github.com/alf149/guaserch        #
 #                                                                       #
-# Uses jq as json handler                                               #
 #                                                                       #
 #########################################################################
 
@@ -63,13 +62,13 @@ _domainsearchdata(){
    echo "--------"
    echo "Results for $domain, more info in search/search_${domain}_${runtime}.csv "
    search_final_url=$(curl -Ls http://${domain} -o /dev/null -w '%{url_effective}')
-   search_gua_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "UA-[0-9]{1,8}-[0-9]{1,2}") 
    search_xua_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "X-UA-Compatible") 
-   search_gtag_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "GTM-[0-9,A-Z]{1,6}") 
+   search_gua_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "UA-[0-9]{1,8}-[0-9]{1,2}") 
+   search_gtag_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "GTM-[0-9,A-Z]{1,8}") 
 
    # save to csv file
-   echo "Domain;Final_url;GUA-ID;x-ua;gtag" >> search/search_${domain}_${runtime}.csv
-   echo $domain";"$search_final_url";"$search_gua_res";"$search_xua_res";"$search_gtag_res >> search/search_${domain}_${runtime}.csv
+   echo "Domain;Final_url;x-ua;ua-tag;g-tag" >> search/search_${domain}_${runtime}.csv
+   echo $domain";"$search_final_url";"$search_xua_res";"$search_gua_res";"$search_gtag_res >> search/search_${domain}_${runtime}.csv
 
    _cleantemp         
 }

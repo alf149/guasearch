@@ -1,9 +1,7 @@
-# mycrt
-get public cetificates info from crt.sh
+# guasearch
+get Google analytics tags from URL
 
-Uses jq and curl
-
-apt install jq curl 
-
-yum instal jq curl
+Uses curl grep
+apt install curl 
+yum instal curl
 
