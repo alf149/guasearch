@@ -58,26 +58,17 @@ _domainsearchdata(){
    fi
    tempfile="${tempdir}/${domain}.$$.rl.tmp"
 
-   echo "${runtime} - Checking certs for ${domain}"
+   echo "${runtime} - Checking GUAID for ${domain}"
    echo 
    echo "--------"
    echo "Results for $domain, more info in search/search_${domain}_${runtime}.csv "
-   curl -Ls http://${domain} | grep -ioE "UA-[0-9]{1,8}-[0-9]{1,1}" >> "$tempfile" 2>/dev/null
-   
-   # save to file
-   #cat $tempfile | jq -r '.[] += { "domain": "'$domain'" }' | jq -r 'map({domain,common_name, name_value, entry_timestamp, not_before, not_after, serial_number, issuer_ca_id, issuer_name, id}) | (first | keys_unsorted) as $keys | map([to_entries[] | .value]) as $rows | $keys,$rows[] | @csv ' > search/search_${domain}_${runtime}.csv
-   ##cat $tempfile | jq -r 'map({domain,common_name, name_value, entry_timestamp, not_before, not_after, serial_number, issuer_ca_id, issuer_name, id}) | (first | keys_unsorted) as $keys | map([to_entries[] | .value]) as $rows | $keys,$rows[] | @csv ' > search/search_${domain}_${runtime}.csv
-   
-cat $tempfile
+   search_res=$(curl -Ls http://${domain} | grep -ioE "UA-[0-9]{1,8}-[0-9]{1,1}") 
 
-   if [[ -s search/search_${domain}_${runtime}.csv ]] ; then
-   echo "ok"
-   else
-   cat > search/search_${domain}_${runtime}.csv <<EOF
-"domain","UA"
-"${domain}", "No GA UA code"
-EOF
-   fi ;
+   # save to csv file
+   echo "Domain;GUA-ID" >> search/search_${domain}_${runtime}.csv
+   echo $domain";"$search_res >> search/search_${domain}_${runtime}.csv
+
+
    _cleantemp         
 }
 
