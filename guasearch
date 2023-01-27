@@ -61,14 +61,21 @@ _domainsearchdata(){
    echo 
    echo "--------"
    echo "Results for $domain, more info in search/search_${domain}_${runtime}.csv "
-   search_final_url=$(curl -Ls http://${domain} -o /dev/null -w '%{url_effective}')
-   search_xua_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "X-UA-Compatible") 
-   search_gua_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "UA-[0-9]{1,8}-[0-9]{1,2}") 
-   search_gtag_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "GTM-[0-9,A-Z]{1,8}") 
+  #  search_final_url=$(curl -Ls http://${domain} -o /dev/null -w '%{url_effective}')
+  #  search_xua_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "X-UA-Compatible") 
+  #  search_gua_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "UA-[0-9]{1,8}-[0-9]{1,2}") 
+  #  search_gtag_res=$(curl -Ls http://${domain} | grep -ioE -m 1 "GTM-[0-9,A-Z]{1,8}") 
+
+   search_final_url=$(curl -Ls --head --connect-timeout 1 --max-time 5 http://${domain} -o /dev/null -w '%{url_effective}'  )
+   search_final=$(curl --connect-timeout 1 --max-time 5 {$search_final_url} 2>/dev/null)
+   search_https=$(grep -ioE "(http|https)://" <<< "$search_final_url")
+   search_xua_res=$(grep -ioE -m 1 "X-UA-Compatible" <<< "$search_final")
+   search_gua_res=$(grep -ioE -m 1 "UA-[0-9]{1,8}-[0-9]{1,2}" <<< "$search_final")
+   search_gtag_res=$(grep -ioE -m 1 "GTM-[0-9,A-Z]{1,8}" <<< "$search_final")
 
    # save to csv file
-   echo "Domain;Final_url;x-ua;ua-tag;g-tag" >> search/search_${domain}_${runtime}.csv
-   echo $domain";"$search_final_url";"$search_xua_res";"$search_gua_res";"$search_gtag_res >> search/search_${domain}_${runtime}.csv
+   echo "Domain;http(s);Final_url;x-ua;ua-tag;g-tag" >> search/search_${domain}_${runtime}.csv
+   echo $domain";"$search_https";"$search_final_url";"$search_xua_res";"$search_gua_res";"$search_gtag_res >> search/search_${domain}_${runtime}.csv
 
    _cleantemp         
 }
