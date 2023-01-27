@@ -6,7 +6,7 @@ _help()
 cat <<-END
 #########################################################################
 # Author: alf149                                                        #
-# Scriptname: guaserch version 1.0.1                                    #
+# Scriptname: guaserch version 1.0.2                                    #
 # You'll find last version at https://github.com/alf149/guaserch        #
 #                                                                       #
 #                                                                       #
